@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Memory Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f8ff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 15px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background-color: #1e90ff;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: white;
+      user-select: none;
+    }
+
+    .card.flipped, .card.matched {
+      background-color: #32cd32;
+    }
+
+    #win-message {
+      font-size: 1.5rem;
+      color: green;
+      margin-top: 10px;
+    }
+
+    #replay-btn {
+      padding: 10px 20px;
+      background-color: #ffa500;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+      display: none;
+    }
+
+    #replay-btn:hover {
+      background-color: #ff8c00;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Memory Game</h1>
+  <div id="game-board" class="board"></div>
+  <p id="win-message" style="display: none;">🎉 You won! 🎉</p>
+  <button id="replay-btn">🔄 Replay</button>
+
+  <script>
+    const board = document.getElementById("game-board");
+    const winMessage = document.getElementById("win-message");
+    const replayButton = document.getElementById("replay-btn");
+
+    const icons = ["🍎", "🍌", "🍇", "🍒", "🍎", "🍌", "🍇", "🍒"];
+    let firstCard, secondCard, lockBoard, matchedPairs;
+
+    function initGame() {
+      board.innerHTML = "";
+      winMessage.style.display = "none";
+      replayButton.style.display = "none";
+
+      const shuffledIcons = [...icons].sort(() => 0.5 - Math.random());
+      firstCard = null;
+      secondCard = null;
+      lockBoard = false;
+      matchedPairs = 0;
+
+      shuffledIcons.forEach(icon => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+        card.setAttribute("data-icon", icon);
+        card.innerText = "";
+        card.addEventListener("click", flipCard);
+        board.appendChild(card);
+      });
+    }
+
+    function flipCard() {
+      if (lockBoard || this.classList.contains("matched") || this === firstCard) return;
+
+      this.classList.add("flipped");
+      this.innerText = this.getAttribute("data-icon");
+
+      if (!firstCard) {
+        firstCard = this;
+        return;
+      }
+
+      secondCard = this;
+      lockBoard = true;
+      checkMatch();
+    }
+
+    function checkMatch() {
+      let isMatch = firstCard.getAttribute("data-icon") === secondCard.getAttribute("data-icon");
+
+      if (isMatch) {
+        firstCard.classList.add("matched");
+        secondCard.classList.add("matched");
+        matchedPairs++;
+        resetFlippedCards();
+
+        if (matchedPairs === icons.length / 2) {
+          winMessage.style.display = "block";
+          replayButton.style.display = "inline-block";
+        }
+      } else {
+        setTimeout(() => {
+          firstCard.classList.remove("flipped");
+          secondCard.classList.remove("flipped");
+          firstCard.innerText = "";
+          secondCard.innerText = "";
+          resetFlippedCards();
+        }, 1000);
+      }
+    }
+
+    function resetFlippedCards() {
+      [firstCard, secondCard] = [null, null];
+      lockBoard = false;
+    }
+
+    replayButton.addEventListener("click", initGame);
+
+    // Initialize the game when the page loads
+    initGame();
+  </script>
+</body>
+</html>
